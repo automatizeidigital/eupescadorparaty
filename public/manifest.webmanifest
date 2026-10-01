@@ -1,0 +1,19 @@
+{
+  "name": "Eu Pescador! — Paraty-RJ",
+  "short_name": "Eu Pescador!",
+  "description": "App do pescador de Paraty: clima, maré, embarcações, carteirinha digital e segurança no mar.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F0F8FA",
+  "theme_color": "#00647F",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
