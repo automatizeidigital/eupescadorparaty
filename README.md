@@ -1,23 +1,15 @@
 # Eu Pescador! — Paraty
 
-Portal para cadastros de pescadores, embarcações, documentos, viagens, avisos e administração.
+Portal em React e TanStack Start para pescadores, embarcações, documentos, viagens e administração.
 
 ## Estado atual
 
-Interface em React e TanStack Start, publicada no Sites. A antiga integração foi removida. Login e cadastro exibem aviso de reconstrução; as áreas restritas bloqueiam o acesso até a nova integração ser concluída.
-
-Uma nova base Supabase, eupescadorparaty, foi configurada com 24 tabelas, controle de acesso por usuário e documentos privados. O esquema está em database/schema.sql. O usuário MASTER foi criado na base, mas suas credenciais não fazem parte deste repositório.
+A integração com a nova base Supabase eupescadorparaty foi restaurada. Login MASTER, identificação da permissão e carregamento do painel administrativo foram verificados no ambiente local. A atualização publicada no Sites ainda está pendente.
 
 ## Desenvolvimento
 
-Instale as dependências com bun install --frozen-lockfile. Execute bun run dev para desenvolver e bun run build para gerar a versão de produção.
+Instale com bun install --frozen-lockfile. Copie .env.example para .env e preencha a URL e a chave publicável da sua base. Execute bun run dev ou bun run build.
 
-## Publicação
+## Segurança e publicação
 
-O site utiliza Sites. A configuração em .openai/hosting.json identifica o site existente. A publicação é feita pelo fluxo do Sites; este repositório não tem publicação automática configurada.
-
-## Próxima etapa
-
-Conectar o site à nova base e restaurar os fluxos de login, cadastro e administração, validando as permissões de cada usuário.
-
-Não versionar senhas, arquivos .env, chaves secretas, sessões, dados pessoais ou cópias do banco de produção.
+Não versionar senhas, chaves secretas ou arquivos .env. O esquema da base está em database/schema.sql; ele não inclui contas ou credenciais. Configure os valores de produção pelo Sites. O repositório não possui publicação automática configurada.

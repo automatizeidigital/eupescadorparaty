@@ -1,4 +1,3 @@
-import { clearLocalSession } from '@/lib/backend-reset';
 import React from 'react';
 import { Link, useLocation } from '@tanstack/react-router';
 import { 
@@ -29,7 +28,7 @@ import {
 import logoAsset from "@/assets/logo.asset.json";
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-
+import { supabase } from '@/integrations/supabase/client';
 import { logAdminAction } from '@/lib/audit.functions';
 
 const menuGroups = [
@@ -90,7 +89,7 @@ export function AdminSidebar() {
   const location = useLocation();
 
   const handleLogout = async () => {
-    await clearLocalSession();
+    await supabase.auth.signOut();
     window.location.href = '/entrar';
   };
 

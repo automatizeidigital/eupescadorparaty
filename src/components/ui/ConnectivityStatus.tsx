@@ -47,8 +47,8 @@ export const ConnectivityStatus = () => {
         </AlertTitle>
         <AlertDescription className="ml-2 text-xs opacity-90">
           {isOnline 
-            ? "Sincronizando dados pendentes..." 
-            : "Algumas informações podem estar desatualizadas. Operações críticas serão salvas e enviadas assim que houver sinal."}
+            ? "A conexão foi restabelecida. Você pode tentar novamente." 
+            : "As informações podem estar desatualizadas. Sem conexão, os envios não são confirmados. Em emergência, ligue 185 ou 193."}
         </AlertDescription>
       </Alert>
     </div>

@@ -123,16 +123,6 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  useEffect(() => {
-    // Remove only retired app-session and synchronization data on this origin.
-    try {
-      for (const key of Object.keys(localStorage)) {
-        if (/^sb-.*-auth-token(?:-code-verifier)?$/.test(key)) localStorage.removeItem(key);
-      }
-      localStorage.removeItem('offline_sync_queue');
-      localStorage.removeItem('eu-pescador-pending-sos-v1');
-    } catch { /* Storage may be unavailable in private browsing. */ }
-  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -1,4 +1,4 @@
-
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { createServerFn } from "@tanstack/react-start";
 
@@ -86,33 +86,107 @@ export function evaluateTripMonitoring(trip: any): TripMonitoringResult {
 }
 
 export const updateTripReturnTime = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
 
   .validator((data: unknown) => z.object({
     tripId: z.string().uuid(),
     newReturnTime: z.string(),
     reason: z.string().optional(),
   }).parse(data))
-  .handler(async (): Promise<any> => { throw new Error("Serviço temporariamente indisponível. A nova base está sendo preparada."); });
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Unauthorized");
+
+    const { data: trip, error: tripError } = await supabase
+      .from('fishing_trips')
+      .select('expected_return_at')
+      .eq('id', data.tripId)
+      .single();
+
+    if (tripError) throw tripError;
+
+    const oldReturnTime = trip.expected_return_at;
+
+    const { error: updateError } = await supabase
+      .from('fishing_trips')
+      .update({ expected_return_at: data.newReturnTime })
+      .eq('id', data.tripId);
+
+    if (updateError) throw updateError;
+
+    // Log the event
+    await (supabase as any).from('trip_timeline_events').insert({
+      trip_id: data.tripId,
+      event_type: 'expected_return_changed',
+      actor_id: user.id,
+      metadata: {
+        old_return_time: oldReturnTime,
+        new_return_time: data.newReturnTime,
+        reason: data.reason
+      }
+    });
+
+    return { success: true };
+  });
 
 export const confirmFisherAtSea = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
 
   .validator((data: unknown) => z.object({
     tripId: z.string().uuid(),
   }).parse(data))
-  .handler(async (): Promise<any> => { throw new Error("Serviço temporariamente indisponível. A nova base está sendo preparada."); });
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Unauthorized");
+
+    await (supabase as any).from('trip_timeline_events').insert({
+      trip_id: data.tripId,
+      event_type: 'fisher_confirmed_at_sea',
+      actor_id: user.id,
+    });
+
+    return { success: true };
+  });
 
 export const getTripTimeline = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
 
   .validator((data: unknown) => z.object({
     tripId: z.string().uuid(),
   }).parse(data))
-  .handler(async (): Promise<any> => { throw new Error("Serviço temporariamente indisponível. A nova base está sendo preparada."); });
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase;
+    const { data: events, error } = await (supabase as any)
+      .from('trip_timeline_events')
+      .select('*')
+      .eq('trip_id', data.tripId)
+      .order('created_at', { ascending: true });
+
+    if (error) throw error;
+    return events;
+  });
 
 export const logAdminContactAttempt = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
 
   .validator((data: unknown) => z.object({
     tripId: z.string().uuid(),
     notes: z.string(),
   }).parse(data))
-  .handler(async (): Promise<any> => { throw new Error("Serviço temporariamente indisponível. A nova base está sendo preparada."); });
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Unauthorized");
+
+    await (supabase as any).from('trip_timeline_events').insert({
+      trip_id: data.tripId,
+      event_type: 'contact_attempt',
+      actor_id: user.id,
+      metadata: { notes: data.notes }
+    });
+
+    return { success: true };
+  });
 

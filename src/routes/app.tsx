@@ -1,13 +1,36 @@
-import { getSignedOutSession } from '@/lib/backend-reset';
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { AppSidebar } from '@/components/app/AppSidebar'
 import { TopBar } from '@/components/app/TopBar'
 import { BottomNav } from '@/components/app/BottomNav'
 import { getProfile } from '@/lib/profiles.functions'
-
+import { supabase } from '@/integrations/supabase/client'
 
 export const Route = createFileRoute('/app')({
-  beforeLoad: () => { throw redirect({ to: '/entrar' }); },
+  beforeLoad: async ({ location }) => {
+    if (typeof window === 'undefined') return;
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    if (!session) {
+      throw redirect({
+        to: '/entrar',
+        search: {
+          redirect: location.href,
+        },
+      })
+    }
+
+    {
+      const profile = await getProfile()
+      
+      // Se o perfil existe mas não completou o cadastro, redireciona para a página de cadastro
+      // Exceto se já estiver na página de cadastro ou callback
+      if (profile && !profile.registration_completed && !location.pathname.includes('/cadastro')) {
+        throw redirect({
+          to: '/cadastro',
+        })
+      }
+    }
+  },
   component: AppLayout,
 })
 

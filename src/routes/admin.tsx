@@ -1,12 +1,31 @@
-import { getSignedOutSession } from '@/lib/backend-reset';
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { AdminSidebar } from '@/components/admin/AdminSidebar'
 import { AdminGuard } from '@/components/admin/AdminGuard'
 import { checkIsAdmin } from '@/lib/auth-roles.functions'
-
+import { supabase } from '@/integrations/supabase/client'
 
 export const Route = createFileRoute('/admin')({
-  beforeLoad: () => { throw redirect({ to: '/entrar' }); },
+  beforeLoad: async ({ context }) => {
+    if (typeof window === 'undefined') return;
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      throw redirect({ to: '/entrar' })
+    }
+
+    try {
+      const isAdmin = await context.queryClient.ensureQueryData({
+        queryKey: ['is-admin'],
+        queryFn: () => checkIsAdmin(),
+      })
+
+      if (!isAdmin) {
+        throw redirect({ to: '/app' })
+      }
+    } catch (e) {
+      if (e instanceof Error && e.message.includes('redirect')) throw e
+      throw redirect({ to: '/app' })
+    }
+  },
   component: AdminLayout,
 })
 

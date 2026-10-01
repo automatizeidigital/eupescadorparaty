@@ -635,3 +635,8 @@ insert into public.document_categories(name,slug,display_order) values
 ('Registro de pescador','registro-pescador',4),('Documento da embarcação','embarcacao',5),('Outros documentos','outros',6)
 on conflict(slug) do nothing;
 
+
+create function public.has_role(_user_id uuid,_role public.app_role) returns boolean language sql stable security invoker set search_path='' as $$ select _user_id=auth.uid() and exists(select 1 from public.user_roles where user_id=auth.uid() and role=_role); $$;
+create function public.is_any_admin(_user_id uuid) returns boolean language sql stable security invoker set search_path='' as $$ select _user_id=auth.uid() and private.is_admin(); $$;
+revoke all on function public.has_role(uuid,public.app_role),public.is_any_admin(uuid) from public,anon;
+grant execute on function public.has_role(uuid,public.app_role),public.is_any_admin(uuid) to authenticated;

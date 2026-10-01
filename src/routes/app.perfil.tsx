@@ -1,4 +1,3 @@
-import { getSignedOutUser, backendUnavailable, clearLocalSession } from '@/lib/backend-reset';
 import { createFileRoute } from '@tanstack/react-router'
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -17,7 +16,7 @@ import {
   Bell,
   ShieldCheck
 } from "lucide-react"
-
+import { supabase } from "@/integrations/supabase/client"
 import { useQuery } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { Link } from '@tanstack/react-router'
@@ -39,10 +38,14 @@ function ProfilePage() {
   const { data: profile, isLoading } = useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
-      const { data: { user } } = await getSignedOutUser()
+      const { data: { user } } = await supabase.auth.getUser()
       if (!user) return null
       
-      const { data, error } = await backendUnavailable()
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
         
       if (error) throw error
       return data
@@ -50,7 +53,7 @@ function ProfilePage() {
   })
 
   const handleLogout = async () => {
-    const { error } = await clearLocalSession()
+    const { error } = await supabase.auth.signOut()
     if (error) {
       toast.error("Erro ao sair")
     } else {

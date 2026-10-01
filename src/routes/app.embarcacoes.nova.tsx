@@ -1,4 +1,3 @@
-import { getSignedOutUser, backendUnavailable } from '@/lib/backend-reset';
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Card, CardContent } from "@/components/ui/card"
@@ -17,7 +16,7 @@ import {
   Check,
   Camera
 } from "lucide-react"
-
+import { supabase } from "@/integrations/supabase/client"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { Link, useNavigate } from '@tanstack/react-router'
@@ -49,10 +48,17 @@ function NewBoatPage() {
 
   const mutation = useMutation({
     mutationFn: async (boatData: any) => {
-      const { data: { user } } = await getSignedOutUser()
+      const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error("Usuário não autenticado")
 
-      const { error } = await backendUnavailable()
+      const { error } = await supabase
+        .from('boats')
+        .insert({
+          ...boatData,
+          owner_id: user.id,
+          length_meters: boatData.length_meters ? parseFloat(boatData.length_meters) : null,
+          engine_power_hp: boatData.engine_power_hp ? parseFloat(boatData.engine_power_hp) : null,
+        })
 
       if (error) throw error
     },

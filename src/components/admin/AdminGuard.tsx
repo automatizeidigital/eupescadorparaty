@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { checkIsAdmin } from '@/lib/auth-roles.functions';
-
+import { supabase } from '@/integrations/supabase/client';
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();

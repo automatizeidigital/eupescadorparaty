@@ -1,4 +1,3 @@
-import { getSignedOutUser, backendUnavailable } from '@/lib/backend-reset';
 import { createFileRoute } from '@tanstack/react-router'
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -12,7 +11,7 @@ import {
   Eye,
   Star
 } from "lucide-react"
-
+import { supabase } from "@/integrations/supabase/client"
 import { useQuery } from "@tanstack/react-query"
 import { Link } from '@tanstack/react-router'
 
@@ -24,10 +23,14 @@ function BoatsPage() {
   const { data: boats, isLoading } = useQuery({
     queryKey: ['boats'],
     queryFn: async () => {
-      const { data: { user } } = await getSignedOutUser()
+      const { data: { user } } = await supabase.auth.getUser()
       if (!user) return []
       
-      const { data, error } = await backendUnavailable()
+      const { data, error } = await supabase
+        .from('boats')
+        .select('*')
+        .eq('owner_id', user.id)
+        .order('is_primary', { ascending: false })
         
       if (error) throw error
       return data || []

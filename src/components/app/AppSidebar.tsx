@@ -1,4 +1,3 @@
-import { clearLocalSession } from '@/lib/backend-reset';
 import { Link, useNavigate } from '@tanstack/react-router'
 import { 
   Home, 
@@ -14,7 +13,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-
+import { supabase } from '@/integrations/supabase/client'
 import logoAsset from "@/assets/logo.asset.json"
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
@@ -23,7 +22,7 @@ export function AppSidebar({ className }: SidebarProps) {
   const navigate = useNavigate()
 
   const handleLogout = async () => {
-    await clearLocalSession()
+    await supabase.auth.signOut()
     navigate({ to: '/entrar' })
   }
 
